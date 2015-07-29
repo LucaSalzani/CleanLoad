@@ -124,6 +124,12 @@ namespace CleanLoad
             }
         }
 
+        public string GlobalStatus
+        {
+            get { return lblGlobalState.Text; }
+            set { lblGlobalState.Text = value; }
+        }
+
 
         public event EventHandler<DownloadEventArgs> DLStartStop;
         public event EventHandler<LinksEventArgs> DLGetDataFromLINK;

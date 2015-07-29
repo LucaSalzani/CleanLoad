@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Net;
 using System.Windows.Forms;
+using System.IO;
 
 namespace CleanLoad
 {
@@ -103,8 +104,8 @@ namespace CleanLoad
             FolderBrowserDialog folderBrowserDialog1 = new FolderBrowserDialog();
             if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
             {
-                settingsView.DownloadPath = folderBrowserDialog1.SelectedPath;
-                downloadPath = folderBrowserDialog1.SelectedPath;
+                settingsView.DownloadPath = new DirectoryInfo(folderBrowserDialog1.SelectedPath).FullName;
+                downloadPath = settingsView.DownloadPath;
             }
         }
     }

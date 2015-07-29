@@ -8,7 +8,7 @@ namespace CleanLoad
     public interface IDownloaderLayer
     {
         List<string[]> DLListView { get; set; }
-
+        string GlobalStatus { get; set; }
 
         event EventHandler<DownloadEventArgs> DLStartStop;
         event EventHandler<LinksEventArgs> DLGetDataFromLINK;

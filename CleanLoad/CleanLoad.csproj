@@ -62,6 +62,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DOWNLOADER\DLFile.cs" />
     <Compile Include="DOWNLOADER\DownloaderPresenter.cs" />
     <Compile Include="DOWNLOADER\DownloadEventArgs.cs" />
     <Compile Include="DOWNLOADER\IDownloaderLayer.cs" />

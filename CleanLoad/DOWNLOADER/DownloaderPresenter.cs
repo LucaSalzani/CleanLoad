@@ -2,10 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Net;
+using System.IO;
+using System.Windows.Forms;
+using System.Text.RegularExpressions;
+using System.ComponentModel;
 
 namespace CleanLoad
 {
-    enum StatusEnum
+    public enum StatusEnum
     {
         Ready,
         Downloading,
@@ -19,6 +24,10 @@ namespace CleanLoad
     {
         private readonly IDownloaderLayer dlView;
         private bool isStarted;
+        private CookieCollection cookieJar = null;
+        BackgroundWorker bw = new BackgroundWorker();
+
+
 
         public DownloaderPresenter(IDownloaderLayer dlView)
         {
@@ -31,15 +40,15 @@ namespace CleanLoad
             dlView.DLStartStop += DLStartStop;
             dlView.DLGetDataFromLINK += DLGetDataFromLINK;
             isStarted = false;
+
+
+            bw.WorkerSupportsCancellation = true;
+            bw.WorkerReportsProgress = true;
+            bw.DoWork += new DoWorkEventHandler(bw_DoWork);
+            bw.ProgressChanged += new ProgressChangedEventHandler(bw_ProgressChanged);
+            bw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bw_RunWorkerCompleted);
         }
 
-        private void DLStartStop(object sender, DownloadEventArgs e)
-        {
-            //VALIDATE: Input for DLStartStop
-
-
-            //TODO: Implement DLStartStop
-        }
 
         private void DLGetDataFromLINK(object sender, LinksEventArgs e)
         {
@@ -57,6 +66,124 @@ namespace CleanLoad
             tempAddingList = dlView.DLListView;
             tempAddingList.AddRange(tempList);
             dlView.DLListView = tempAddingList;
+        }
+
+        private void DLStartStop(object sender, DownloadEventArgs e)
+        {
+            //VALIDATE: Input for DLStartStop und ListView
+            isStarted = !isStarted;
+
+
+            cookieJar = Logon(e.ULAccount, e.WebProxy);
+
+            
+            List<DLFile> listFilesToDL = new List<DLFile>();
+            foreach (string[] item in dlView.DLListView)
+                if (item[1] == StatusEnum.Ready.ToString())
+                    listFilesToDL.Add(new DLFile(item[0], StatusEnum.Ready, e.DLPath, e.WebProxy, cookieJar));
+            
+            foreach (DLFile file in listFilesToDL)
+            {
+                file.GetID();
+                file.GetDirectDownloadLink();
+            }
+
+            if (!bw.IsBusy)
+            {
+                bw.RunWorkerAsync(listFilesToDL);
+            }
+        }
+
+        private void bw_DoWork(object sender, DoWorkEventArgs e)
+        {
+            BackgroundWorker worker = sender as BackgroundWorker;
+
+            foreach (DLFile file in (List<DLFile>)e.Argument)
+            {
+                file.DownloadFileFromUL(ref worker); //TODO: Report Progress
+
+                if ((worker.CancellationPending == true))
+                {
+                    e.Cancel = true;
+                    break;
+                }
+
+                worker.ReportProgress(42, file);
+            }
+        }
+
+        private void bw_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            dlView.GlobalStatus = (e.ProgressPercentage.ToString() + "%");
+            DLFile tempFile = (DLFile)e.UserState;
+
+            if (tempFile.Status == StatusEnum.Done)
+            {
+                List<string[]> tempList = dlView.DLListView;
+                foreach (string[] item in tempList)
+                    if (item[0] == tempFile.DlURL)
+                        item[1] = StatusEnum.Done.ToString();
+
+                dlView.DLListView = tempList;
+            }
+        }
+
+        private void bw_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if ((e.Cancelled == true))
+            {
+                dlView.GlobalStatus = "Canceled!";
+            }
+
+            else if (!(e.Error == null))
+            {
+                dlView.GlobalStatus = ("Error: " + e.Error.Message);
+            }
+
+            else
+            {
+                
+                dlView.GlobalStatus = "Done!";
+            }
+        }
+
+
+
+        private CookieCollection Logon(ULAccount ulAccount, WebProxy webProxy)
+        {
+            // this is what we are sending
+            string post_data = "id=" + ulAccount.Username + "&pw=" + ulAccount.Password;
+
+            // this is where we will send it
+            string uri = "https://uploaded.net/io/login";
+
+            // create a request
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
+            request.KeepAlive = false;
+            request.ProtocolVersion = HttpVersion.Version10;
+            request.Method = "POST";
+
+            // turn our request string into a byte stream
+            byte[] postBytes = Encoding.ASCII.GetBytes(post_data);
+
+            //Proxy
+            if (webProxy != null)
+                request.Proxy = webProxy;
+
+            request.ContentType = "application/x-www-form-urlencoded";
+            request.ContentLength = postBytes.Length;
+            request.CookieContainer = new CookieContainer();
+
+            Stream requestStream = request.GetRequestStream();
+
+            // now send it
+            requestStream.Write(postBytes, 0, postBytes.Length);
+            requestStream.Close();
+
+            // grab the response and print it out to the console along with the status code
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+            return response.Cookies;
         }
     }
 }
