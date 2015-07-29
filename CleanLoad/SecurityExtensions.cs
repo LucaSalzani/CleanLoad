@@ -50,6 +50,7 @@ namespace CleanLoad
         public static string Decrypt(this string cipher)
         {
             if (cipher == null) throw new ArgumentNullException("cipher");
+            if (cipher == "") return "";
 
             //parse base64 string
             byte[] data = Convert.FromBase64String(cipher);

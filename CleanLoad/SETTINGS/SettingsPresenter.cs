@@ -35,12 +35,15 @@ namespace CleanLoad
             settingsView.ProxyPassword = Properties.Settings.Default.ProxyPassword.Decrypt();
 
             if (!String.IsNullOrEmpty(settingsView.ProxyAddress))
+            {
                 myProxy = new Proxy(settingsView.ProxyAddress, settingsView.IsProxyActive, settingsView.ProxyUsername, settingsView.ProxyPassword);
+                currentProxy = myProxy.GetProxyToUse();
+            }
             else
+            {
                 myProxy = null;
-
-            //Set WebProxy
-            currentProxy = myProxy.GetProxyToUse();
+                currentProxy = null;
+            }
 
 
 
