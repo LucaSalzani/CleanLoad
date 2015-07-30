@@ -52,17 +52,13 @@ namespace CleanLoad
 
         private void DLGetDataFromLINK(object sender, LinksEventArgs e)
         {
-            List<string[]> tempList = new List<string[]>();
+            List<DLFile> tempList = new List<DLFile>();
 
             foreach (string item in e.ListDL)
-            {
-                string[] tempStringArray = new string[2];
-                tempStringArray[0] = item;
-                tempStringArray[1] = StatusEnum.Ready.ToString();
-                tempList.Add(tempStringArray);
-            }
+                tempList.Add(new DLFile(item, StatusEnum.Ready));
 
-            List<string[]> tempAddingList = new List<string[]>();
+
+            List<DLFile> tempAddingList = new List<DLFile>();
             tempAddingList = dlView.DLListView;
             tempAddingList.AddRange(tempList);
             dlView.DLListView = tempAddingList;
@@ -77,9 +73,9 @@ namespace CleanLoad
 
             
             List<DLFile> listFilesToDL = new List<DLFile>();
-            foreach (string[] item in dlView.DLListView)
-                if (item[1] == StatusEnum.Ready.ToString())
-                    listFilesToDL.Add(new DLFile(item[0], StatusEnum.Ready, e.DLPath, e.WebProxy, cookieJar));
+            foreach (DLFile item in dlView.DLListView)
+                if (item.Status == StatusEnum.Ready)
+                    listFilesToDL.Add(new DLFile(item.DlURL, StatusEnum.Ready, e.DLPath, e.WebProxy, cookieJar));
             
             foreach (DLFile file in listFilesToDL)
             {
@@ -122,24 +118,16 @@ namespace CleanLoad
 
                 if (e.ProgressPercentage == -1)
                 {
-                    List<string[]> tempList = dlView.DLListView;
-                    foreach (string[] item in tempList)
-                        if (item[0] == tempFile.DlURL)
-                            item[1] = tempFile.Status.ToString();
+                    List<DLFile> tempList = dlView.DLListView;
+                    foreach (DLFile item in tempList)
+                        if (item.DlURL == tempFile.DlURL)
+                            item.Status = tempFile.Status;
 
                     dlView.DLListView = tempList;
                 }
                 else
                 {
                     dlView.DLViewUpdatePercentage(tempFile, e.ProgressPercentage);
-
-
-                    //List<string[]> tempList = dlView.DLListView;
-                    //foreach (string[] item in tempList)
-                    //    if (item[0] == tempFile.DlURL)
-                    //        item[1] = e.ProgressPercentage.ToString() + " %";
-
-                    //dlView.DLListView = tempList;
                 }
             }
         }

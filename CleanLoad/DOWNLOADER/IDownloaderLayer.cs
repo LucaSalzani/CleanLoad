@@ -7,7 +7,7 @@ namespace CleanLoad
 {
     public interface IDownloaderLayer
     {
-        List<string[]> DLListView { get; set; }
+        List<DLFile> DLListView { get; set; }
         string GlobalStatus { get; set; }
         string DLButtonStartStop { get; set; }
 

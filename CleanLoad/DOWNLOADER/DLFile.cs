@@ -12,6 +12,24 @@ namespace CleanLoad
 {
     public class DLFile
     {
+        public static DLFile CreateDLFile(ListViewItem lvItem)
+        {
+            if (lvItem.SubItems[1].Text.EndsWith("%"))
+            {
+                return new DLFile(lvItem.Text, StatusEnum.Downloading);
+            }
+            return new DLFile(lvItem.Text, (StatusEnum)Enum.Parse(typeof(StatusEnum), lvItem.SubItems[1].Text));
+        }
+
+        public static ListViewItem CreateListViewItem(DLFile dlFile)
+        {
+            ListViewItem lvItem = new ListViewItem();
+            lvItem.Text = dlFile.DlURL;
+            lvItem.SubItems.Add(dlFile.Status.ToString());
+            return lvItem;
+        }
+
+
         private string _dlURL;
         private string _id;
         private StatusEnum _status;
@@ -35,6 +53,14 @@ namespace CleanLoad
             get { return _dlURL; }
         }
 
+        public DLFile(string dlURL, StatusEnum status)
+        {
+            _dlURL = dlURL;
+            _status = status;
+
+            _id = null;
+        }
+
 
         public DLFile(string dlURL, StatusEnum status, string dlPath, WebProxy webProxy, CookieCollection cookieJar)
         {
@@ -46,6 +72,8 @@ namespace CleanLoad
 
             _id = null;
         }
+
+
 
         public void GetID()
         {

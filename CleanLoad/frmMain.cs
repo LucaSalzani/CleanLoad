@@ -102,25 +102,22 @@ namespace CleanLoad
         #endregion
 
         #region Downloader Properties
-        public List<string[]> DLListView
+        public List<DLFile> DLListView
         {
             get 
             {
-                List<string[]> tempList = new List<string[]>();
+                List<DLFile> tempList = new List<DLFile>();
                 foreach (ListViewItem item in listViewDL.Items)
                 {
-                    string[] tempStringArray = new string[2];
-                    tempStringArray[0] = item.Text;
-                    tempStringArray[1] = item.SubItems[1].Text;
-                    tempList.Add(tempStringArray);
+                    tempList.Add(DLFile.CreateDLFile(item));
                 }
                 return tempList;
             }
             set 
             {
                 listViewDL.Items.Clear();
-                foreach (string[] item in value)
-                    listViewDL.Items.Add(item[0]).SubItems.Add(item[1]);
+                foreach (DLFile item in value)
+                    listViewDL.Items.Add(DLFile.CreateListViewItem(item)); //TODO: Add Percentage to DLFile
             }
         }
 
@@ -159,6 +156,7 @@ namespace CleanLoad
             listViewDL.FullRowSelect = true;
             listViewDL.Columns.Add("File", -2, HorizontalAlignment.Left);
             listViewDL.Columns.Add("Status", -2, HorizontalAlignment.Left);
+
         }
 
         public void DLViewUpdatePercentage(DLFile dlFile, int percentage)
@@ -168,9 +166,6 @@ namespace CleanLoad
                 listViewDL.Items[lvItem.Index].SubItems[1].Text = percentage.ToString() + " %";
 
         }
-
-
-
 
 
 
