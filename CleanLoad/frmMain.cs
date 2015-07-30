@@ -81,7 +81,7 @@ namespace CleanLoad
                     tempList.Add(s);
                 return tempList;
             }
-            set //TODO: Implement Changed event for list (not only getter & setter)
+            set
             {
                 lbLG_AddedLinks.Items.Clear();
                 lbLG_AddedLinks.Items.AddRange(value.ToArray<string>());
@@ -124,6 +124,12 @@ namespace CleanLoad
             }
         }
 
+        public string DLButtonStartStop
+        {
+            get { return btnDL_StartStop.Text; }
+            set { btnDL_StartStop.Text = value; }
+        }
+
         public string GlobalStatus
         {
             get { return lblGlobalState.Text; }
@@ -153,6 +159,14 @@ namespace CleanLoad
             listViewDL.FullRowSelect = true;
             listViewDL.Columns.Add("File", -2, HorizontalAlignment.Left);
             listViewDL.Columns.Add("Status", -2, HorizontalAlignment.Left);
+        }
+
+        public void DLViewUpdatePercentage(DLFile dlFile, int percentage)
+        {
+            ListViewItem lvItem = listViewDL.FindItemWithText(dlFile.DlURL);
+            if (lvItem != null)
+                listViewDL.Items[lvItem.Index].SubItems[1].Text = percentage.ToString() + " %";
+
         }
 
 
@@ -227,7 +241,7 @@ namespace CleanLoad
 
         private void btnDL_StartStop_Click(object sender, EventArgs e)
         {
-            if (DLStartStop != null) //TODO: Change Start <-> Stop
+            if (DLStartStop != null)
                 DLStartStop(this, new DownloadEventArgs(setPresenter.currentProxy, setPresenter.ulAccount, setPresenter.downloadPath));
         }
     }

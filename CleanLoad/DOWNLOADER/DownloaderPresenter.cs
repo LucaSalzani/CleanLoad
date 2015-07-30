@@ -73,7 +73,6 @@ namespace CleanLoad
             //VALIDATE: Input for DLStartStop und ListView
             isStarted = !isStarted;
 
-
             cookieJar = Logon(e.ULAccount, e.WebProxy);
 
             
@@ -88,8 +87,9 @@ namespace CleanLoad
                 file.GetDirectDownloadLink();
             }
 
-            if (!bw.IsBusy)
+            if (!bw.IsBusy && listFilesToDL.Count > 0)
             {
+                dlView.DLButtonStartStop = "Stop";
                 bw.RunWorkerAsync(listFilesToDL);
             }
         }
@@ -100,7 +100,9 @@ namespace CleanLoad
 
             foreach (DLFile file in (List<DLFile>)e.Argument)
             {
-                file.DownloadFileFromUL(ref worker); //TODO: Report Progress
+                file.Status = StatusEnum.Downloading;
+                worker.ReportProgress(-1, file);
+                file.DownloadFileFromUL(ref worker);
 
                 if ((worker.CancellationPending == true))
                 {
@@ -108,28 +110,43 @@ namespace CleanLoad
                     break;
                 }
 
-                worker.ReportProgress(42, file);
+                worker.ReportProgress(-1, file);
             }
         }
 
         private void bw_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            dlView.GlobalStatus = (e.ProgressPercentage.ToString() + "%");
-            DLFile tempFile = (DLFile)e.UserState;
-
-            if (tempFile.Status == StatusEnum.Done)
+            if (e.UserState != null)
             {
-                List<string[]> tempList = dlView.DLListView;
-                foreach (string[] item in tempList)
-                    if (item[0] == tempFile.DlURL)
-                        item[1] = StatusEnum.Done.ToString();
+                DLFile tempFile = (DLFile)e.UserState;
 
-                dlView.DLListView = tempList;
+                if (e.ProgressPercentage == -1)
+                {
+                    List<string[]> tempList = dlView.DLListView;
+                    foreach (string[] item in tempList)
+                        if (item[0] == tempFile.DlURL)
+                            item[1] = tempFile.Status.ToString();
+
+                    dlView.DLListView = tempList;
+                }
+                else
+                {
+                    dlView.DLViewUpdatePercentage(tempFile, e.ProgressPercentage);
+
+
+                    //List<string[]> tempList = dlView.DLListView;
+                    //foreach (string[] item in tempList)
+                    //    if (item[0] == tempFile.DlURL)
+                    //        item[1] = e.ProgressPercentage.ToString() + " %";
+
+                    //dlView.DLListView = tempList;
+                }
             }
         }
 
         private void bw_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            dlView.DLButtonStartStop = "Start";
             if ((e.Cancelled == true))
             {
                 dlView.GlobalStatus = "Canceled!";
@@ -142,7 +159,6 @@ namespace CleanLoad
 
             else
             {
-                
                 dlView.GlobalStatus = "Done!";
             }
         }

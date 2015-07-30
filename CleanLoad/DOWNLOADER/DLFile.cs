@@ -28,6 +28,7 @@ namespace CleanLoad
         public StatusEnum Status
         {
             get { return _status; }
+            set { _status = value; }
         }
         public string DlURL
         {
@@ -111,12 +112,24 @@ namespace CleanLoad
 
             //Get the Stream returned from the response
             instream = response.GetResponseStream();
+            long filesize = response.ContentLength;
+            int downloadedBytes = 0;
+            int currentPercentage = 0;
 
             byte[] buffer = new byte[8 * 1024];
             int len;
             while ((len = instream.Read(buffer, 0, buffer.Length)) > 0)
             {
                 outstream.Write(buffer, 0, len);
+                downloadedBytes += len;
+                double temp = (double)downloadedBytes / (double)filesize * 100.0;
+                if (currentPercentage + 1 < temp)
+                {
+                    currentPercentage = (int)temp;
+                    worker.ReportProgress(currentPercentage, this);
+                }
+
+                
             }
             instream.Close();
             outstream.Close();

@@ -44,8 +44,7 @@ namespace CleanLoad
                 myProxy = null;
                 currentProxy = null;
             }
-
-
+       
 
             //Load uploaded.net settings
             settingsView.UploadedUsername = Properties.Settings.Default.UploadedUsername;
@@ -74,12 +73,15 @@ namespace CleanLoad
             Properties.Settings.Default.ProxyPassword = settingsView.ProxyPassword.Encrypt();
 
             if (!String.IsNullOrEmpty(settingsView.ProxyAddress))
+            {
                 myProxy = new Proxy(settingsView.ProxyAddress, settingsView.IsProxyActive, settingsView.ProxyUsername, settingsView.ProxyPassword);
+                currentProxy = myProxy.GetProxyToUse();
+            }
             else
+            {
                 myProxy = null;
-
-            //Set WebProxy
-            currentProxy = myProxy.GetProxyToUse();
+                currentProxy = null;
+            }
 
 
             //Uploaded.net settings
