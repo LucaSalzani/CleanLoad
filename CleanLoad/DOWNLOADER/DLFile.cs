@@ -12,7 +12,7 @@ namespace CleanLoad
 {
     public class DLFile
     {
-        public static DLFile CreateDLFile(ListViewItem lvItem)
+        public static DLFile CreateDLFile(ListViewItem lvItem) //TODO: LV: ADD HERE
         {
             if (lvItem.SubItems[1].Text.EndsWith("%"))
             {
@@ -37,6 +37,10 @@ namespace CleanLoad
         private WebProxy _webProxy;
         private CookieCollection _cookieJar;
 
+        private long _filesizeBytes;
+        private int _percentage;
+        private string _filename;
+
         private string _directDownloadLink;
 
         public string DirectDownloadLink
@@ -52,6 +56,18 @@ namespace CleanLoad
         {
             get { return _dlURL; }
         }
+        public CookieCollection CookieJar
+        {
+            get { return _cookieJar; }
+            set { _cookieJar = value; }
+        }
+        public WebProxy WEBProxy
+        {
+            get { return _webProxy; }
+            set { _webProxy = value; }
+        }
+
+
 
         public DLFile(string dlURL, StatusEnum status)
         {
@@ -73,6 +89,27 @@ namespace CleanLoad
             _id = null;
         }
 
+
+        public void GetFileInformations()
+        {
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(_directDownloadLink);
+
+            if (_webProxy != null)
+                request.Proxy = _webProxy;
+
+            request.CookieContainer = new CookieContainer();
+            request.CookieContainer.Add(_cookieJar);
+
+
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+            Regex regexName = new Regex("attachment; filename=\"([^\\\\/\\:\\*\\?\\\"\\<\\>\\|]+)\"");
+            Match matchName = regexName.Match(response.GetResponseHeader("Content-Disposition"));
+
+            _filename = matchName.Groups[1].ToString();
+
+            _filesizeBytes = Convert.ToInt64(response.GetResponseHeader("Content-Length"));
+        }
 
 
         public void GetID()

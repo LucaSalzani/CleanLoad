@@ -107,7 +107,7 @@ namespace CleanLoad
             get 
             {
                 List<DLFile> tempList = new List<DLFile>();
-                foreach (ListViewItem item in listViewDL.Items)
+                foreach (ListViewItem item in listViewDL.Items) //TODO: LV: ADD HERE
                 {
                     tempList.Add(DLFile.CreateDLFile(item));
                 }
@@ -117,7 +117,7 @@ namespace CleanLoad
             {
                 listViewDL.Items.Clear();
                 foreach (DLFile item in value)
-                    listViewDL.Items.Add(DLFile.CreateListViewItem(item)); //TODO: Add Percentage to DLFile
+                    listViewDL.Items.Add(DLFile.CreateListViewItem(item));
             }
         }
 
@@ -154,8 +154,11 @@ namespace CleanLoad
 
             listViewDL.View = View.Details;
             listViewDL.FullRowSelect = true;
-            listViewDL.Columns.Add("File", -2, HorizontalAlignment.Left);
+            listViewDL.Columns.Add("Filename", -2, HorizontalAlignment.Left);
             listViewDL.Columns.Add("Status", -2, HorizontalAlignment.Left);
+            listViewDL.Columns.Add("Progress", -2, HorizontalAlignment.Left);
+            listViewDL.Columns.Add("Filesize", -2, HorizontalAlignment.Left);
+            listViewDL.Columns.Add("FileURL", -2, HorizontalAlignment.Left);
 
         }
 
@@ -226,7 +229,7 @@ namespace CleanLoad
         private void btnLG_SubmitToDL_Click(object sender, EventArgs e)
         {
             if (DLGetDataFromLINK != null)
-                DLGetDataFromLINK(this, new LinksEventArgs(CombinedLinks));
+                DLGetDataFromLINK(this, new LinksEventArgs(CombinedLinks, setPresenter.currentProxy, setPresenter.ulAccount));
             tabControl1.SelectedTab = tapPageDownload;
             if (LINKDeleteCombinedLinks != null)
                 LINKDeleteCombinedLinks(this, EventArgs.Empty);

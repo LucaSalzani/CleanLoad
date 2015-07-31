@@ -27,6 +27,8 @@ namespace CleanLoad
         private CookieCollection cookieJar = null;
         BackgroundWorker bw = new BackgroundWorker();
 
+        //TODO: USE THIS? private List<DLFile> fileDownloadList;
+
 
 
         public DownloaderPresenter(IDownloaderLayer dlView)
@@ -57,6 +59,16 @@ namespace CleanLoad
             foreach (string item in e.ListDL)
                 tempList.Add(new DLFile(item, StatusEnum.Ready));
 
+            //TODO: Add Filesize, Progress(%), Filename
+            cookieJar = Logon(e.ULAccount, e.WEBProxy);
+            foreach (DLFile file in tempList)
+            {
+                file.CookieJar = cookieJar;
+                file.WEBProxy = e.WEBProxy;
+                file.GetID();
+                file.GetDirectDownloadLink();
+                file.GetFileInformations();
+            }
 
             List<DLFile> tempAddingList = new List<DLFile>();
             tempAddingList = dlView.DLListView;
